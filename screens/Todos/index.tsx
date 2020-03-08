@@ -1,4 +1,4 @@
-import React, {useState, useReducer, createContext} from 'react';
+import React, {useState, useReducer, createContext, Dispatch} from 'react';
 import {
   Text,
   View,
@@ -13,10 +13,14 @@ import {TodosStateType} from './types';
 
 // eslint-disable-next-line no-spaced-func
 export const TodosContext = createContext<
-  TodosStateType & {renderTodos: () => any[]}
+  TodosStateType & {
+    renderTodos: () => any[];
+    dispatch: Dispatch<any> | null;
+  }
 >({
   ...todosInitState,
   renderTodos: () => [],
+  dispatch: null,
 });
 
 const Loader = () => (
@@ -63,7 +67,8 @@ const Todos = () => {
     }
   };
   return (
-    <TodosContext.Provider value={{...state, renderTodos}}>
+    <TodosContext.Provider
+      value={{...state, renderTodos, ...(dispatch && {dispatch})}}>
       <View style={styles.container}>
         <TodoInput />
         <FlatList
