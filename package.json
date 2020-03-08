@@ -10,11 +10,16 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.8.1",
     "@react-native-community/masked-view": "^0.1.7",
     "@react-navigation/bottom-tabs": "^5.1.1",
     "@react-navigation/native": "^5.0.9",
     "@react-navigation/stack": "^5.1.1",
     "@types/react-native-vector-icons": "^6.4.5",
+    "@types/yup": "^0.26.32",
+    "axios": "^0.19.2",
+    "formik": "^2.1.4",
+    "normalizr": "^3.6.0",
     "react": "16.9.0",
     "react-native": "0.61.5",
     "react-native-gesture-handler": "^1.6.0",
@@ -22,7 +27,8 @@
     "react-native-safe-area-context": "^0.7.3",
     "react-native-screens": "^2.2.0",
     "react-native-vector-icons": "^6.6.0",
-    "react-navigation-tabs": "^2.8.2"
+    "react-navigation-tabs": "^2.8.2",
+    "yup": "^0.28.3"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
