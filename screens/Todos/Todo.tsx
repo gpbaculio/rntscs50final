@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   Text,
   TextInput,
@@ -6,58 +6,76 @@ import {
   StyleSheet,
   Switch,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {TodosContext} from '.';
 
-type TodoPropsType = {
-  todoText: string;
-};
+export interface TodoType {
+  complete: boolean;
+  createdAt: string;
+  id: string;
+  text: string;
+  userId: string;
+}
 
-const Todo: React.FC<TodoPropsType> = ({todoText}) => {
-  const [text, setText] = useState(todoText);
+const Todo: React.FC<TodoType> = ({
+  complete: initComplete,
+  id,
+  text: initText,
+  userId,
+}) => {
+  const [text, setText] = useState(initText);
+  const [complete, setComplete] = useState(initComplete);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const {setTodos, todos, currentFilter} = useContext(TodosContext);
+  const [error, setError] = useState('');
   const toggleEditing = () => {
     setEditing(!editing);
     setLoading(false);
   };
 
-  editTodo = async () => {
-    this.setState({load: true});
-    await this.props.editTodo({text: this.state.text, id: this.props.id});
-    this.toggleEditing();
-  };
-
-  deleteTodo = () => {
-    Alert.alert(
-      `Delete ${this.props.text}?`,
-      'Please Confirm to Proceed',
-      [
-        {
-          text: 'Confirm',
-          onPress: async () => {
-            this.setState({load: true});
-            await this.props.deleteTodo(this.props.id);
-          },
+  const toggleComplete = () => {
+    // optimistic response
+    setComplete(!complete);
+    setLoading(true);
+    fetch(
+      `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}/todos/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-        {
-          text: 'Cancel',
-          style: 'cancel',
+        body: JSON.stringify({complete: !complete}),
+      },
+    )
+      .then(response => response.json())
+      .then(
+        response => {
+          if (response !== 'Not found') {
+            setTodos(
+              todos.map(t => {
+                if (t.id === response.id) {
+                  return response;
+                } else {
+                  return t;
+                }
+              }),
+            );
+            if (currentFilter === 'All') {
+              setComplete(response.complete);
+              setLoading(false);
+            }
+          }
         },
-      ],
-      {cancelable: false},
-    );
-  };
-
-  toggleTodo = async () => {
-    const {id, complete} = this.props;
-    this.setState({load: true});
-    await this.props.toggleTodo({id, complete: !complete});
-    this.setState({load: false});
+        toggleError => {
+          setError(toggleError);
+          setLoading(false);
+        },
+      );
   };
 
   const textComponent = (
@@ -66,33 +84,35 @@ const Todo: React.FC<TodoPropsType> = ({todoText}) => {
     </TouchableOpacity>
   );
   const removeButton = (
-    <TouchableOpacity onPress={this.deleteTodo}>
+    <TouchableOpacity>
       <MaterialIcons name={'delete'} size={24} color={'#cc9a9a'} />
     </TouchableOpacity>
   );
   const doneButton = (
-    <TouchableOpacity onPress={this.editTodo}>
+    <TouchableOpacity>
       <MaterialIcons name={'save'} size={24} color={'green'} />
     </TouchableOpacity>
   );
   const editingComponent = (
     <View style={styles.textWrap}>
       <TextInput
-        editable={!this.props.loading.editTodo}
         returnKeyType="done"
         blurOnSubmit={false}
-        onSubmitEditing={this.editTodo}
         onChangeText={newText => setText(newText)}
         multiline
-        autofocus
-        value={this.state.text}
+        autoFocus
+        value={text}
         style={styles.input}
       />
     </View>
   );
   return (
     <View style={styles.container}>
-      <Switch onValueChange={this.toggleTodo} value={complete} />
+      <Switch
+        disabled={loading}
+        onValueChange={toggleComplete}
+        value={complete}
+      />
       {editing ? editingComponent : textComponent}
       {editing ? doneButton : removeButton}
       {loading && (
@@ -100,14 +120,17 @@ const Todo: React.FC<TodoPropsType> = ({todoText}) => {
           <ActivityIndicator animating size="small" />
         </View>
       )}
+      {!!error && <Text style={styles.errorMessage}>{error}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  errorMessage: {fontSize: 10, color: 'red'},
   container: {
     backgroundColor: '#FFF',
-    padding: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 5,
     justifyContent: 'space-between',
     flexDirection: 'row',
     flex: 1,

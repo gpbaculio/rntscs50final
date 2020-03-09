@@ -15,6 +15,7 @@
     "@react-navigation/bottom-tabs": "^5.1.1",
     "@react-navigation/native": "^5.0.9",
     "@react-navigation/stack": "^5.1.1",
+    "@types/normalizr": "^2.0.18",
     "@types/react-native-vector-icons": "^6.4.5",
     "@types/yup": "^0.26.32",
     "axios": "^0.19.2",

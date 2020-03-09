@@ -37,8 +37,9 @@ export default function App() {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       const token = await AsyncStorage.getItem('token');
-      if (token) {
-        dispatch(restoreToken(token));
+      const userEmail = await AsyncStorage.getItem('user_email');
+      if (token && userEmail) {
+        dispatch(signInSuccess(userEmail, token));
       }
     };
 
@@ -60,6 +61,7 @@ export default function App() {
           }).then(res => res.json());
 
           await AsyncStorage.setItem('token', token);
+          await AsyncStorage.setItem('user_email', email);
           dispatch(signInSuccess(email, token));
         } catch (e) {
           dispatch(signInFailure(e));
