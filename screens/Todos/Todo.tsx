@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import {
   Text,
   TextInput,
@@ -10,28 +10,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import {MaterialIcons} from '@expo/vector-icons';
-import {connect} from 'react-redux';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import {todos} from '../redux/actions';
+type TodoPropsType = {
+  todoText: string;
+};
 
-class Todo extends Component {
-  state = {
-    editing: false,
-    text: '',
-    load: false,
-  };
+const Todo: React.FC<TodoPropsType> = ({todoText}) => {
+  const [text, setText] = useState(todoText);
+  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  componentDidMount() {
-    this.setState({text: this.props.text});
-  }
-
-  handleInputChange = (key, val) => {
-    this.setState({[key]: val});
-  };
-
-  toggleEditing = () => {
-    this.setState({editing: !this.state.editing, load: false});
+  const toggleEditing = () => {
+    setEditing(!editing);
+    setLoading(false);
   };
 
   editTodo = async () => {
@@ -68,55 +60,49 @@ class Todo extends Component {
     this.setState({load: false});
   };
 
-  render() {
-    const {text, complete} = this.props;
-    const {editing, load} = this.state;
-    const textComponent = (
-      <TouchableOpacity
-        style={styles.textWrap}
-        onLongPress={this.toggleEditing}>
-        <Text style={[styles.text, complete && styles.complete]}>{text}</Text>
-      </TouchableOpacity>
-    );
-    const removeButton = (
-      <TouchableOpacity onPress={this.deleteTodo}>
-        <MaterialIcons name={'delete'} size={24} color={'#cc9a9a'} />
-      </TouchableOpacity>
-    );
-    const doneButton = (
-      <TouchableOpacity onPress={this.editTodo}>
-        <MaterialIcons name={'save'} size={24} color={'green'} />
-      </TouchableOpacity>
-    );
-    const editingComponent = (
-      <View style={styles.textWrap}>
-        <TextInput
-          editable={!this.props.loading.editTodo}
-          returnKeyType="done"
-          blurOnSubmit={false}
-          onSubmitEditing={this.editTodo}
-          onChangeText={text => this.handleInputChange('text', text)}
-          multiline
-          autofocus
-          value={this.state.text}
-          style={styles.input}
-        />
-      </View>
-    );
-    return (
-      <View style={styles.container}>
-        <Switch onValueChange={this.toggleTodo} value={complete} />
-        {editing ? editingComponent : textComponent}
-        {editing ? doneButton : removeButton}
-        {load && (
-          <View style={styles.loading}>
-            <ActivityIndicator animating size="small" />
-          </View>
-        )}
-      </View>
-    );
-  }
-}
+  const textComponent = (
+    <TouchableOpacity style={styles.textWrap} onLongPress={toggleEditing}>
+      <Text style={[styles.text, complete && styles.complete]}>{text}</Text>
+    </TouchableOpacity>
+  );
+  const removeButton = (
+    <TouchableOpacity onPress={this.deleteTodo}>
+      <MaterialIcons name={'delete'} size={24} color={'#cc9a9a'} />
+    </TouchableOpacity>
+  );
+  const doneButton = (
+    <TouchableOpacity onPress={this.editTodo}>
+      <MaterialIcons name={'save'} size={24} color={'green'} />
+    </TouchableOpacity>
+  );
+  const editingComponent = (
+    <View style={styles.textWrap}>
+      <TextInput
+        editable={!this.props.loading.editTodo}
+        returnKeyType="done"
+        blurOnSubmit={false}
+        onSubmitEditing={this.editTodo}
+        onChangeText={newText => setText(newText)}
+        multiline
+        autofocus
+        value={this.state.text}
+        style={styles.input}
+      />
+    </View>
+  );
+  return (
+    <View style={styles.container}>
+      <Switch onValueChange={this.toggleTodo} value={complete} />
+      {editing ? editingComponent : textComponent}
+      {editing ? doneButton : removeButton}
+      {loading && (
+        <View style={styles.loading}>
+          <ActivityIndicator animating size="small" />
+        </View>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -155,11 +141,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default connect(
-  ({todos}) => ({loading: todos.loading}),
-  {
-    editTodo: todos.editTodo,
-    deleteTodo: todos.deleteTodo,
-    toggleTodo: todos.toggleTodo,
-  },
-)(Todo);
+export default Todo;
