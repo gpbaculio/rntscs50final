@@ -48,7 +48,6 @@ const TodoInput = () => {
             .then(response => response.json())
             .then(
               todo => {
-                console.log('todo ', todo);
                 if (todo) {
                   setTodos([todo, ...todos]);
                   setLoading(false);

@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import {Formik, FormikState} from 'formik';
+import * as Yup from 'yup';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {TodosContext} from '.';
@@ -20,16 +22,20 @@ export interface TodoType {
   userId: string;
 }
 
+const EditTodoTextSchema = Yup.object().shape({
+  text: Yup.string().required('Required'),
+});
+
 const Todo: React.FC<TodoType> = ({
   complete: initComplete,
   id,
   text: initText,
   userId,
 }) => {
-  const [text, setText] = useState(initText);
   const [complete, setComplete] = useState(initComplete);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [text, setText] = useState(initText);
   const {setTodos, todos, currentFilter} = useContext(TodosContext);
   const [error, setError] = useState('');
   const toggleEditing = () => {
@@ -77,7 +83,41 @@ const Todo: React.FC<TodoType> = ({
         },
       );
   };
-
+  const editTodo = (
+    values: {
+      text: string;
+    },
+    {
+      setFieldError,
+    }: {
+      setFieldError: (field: string, message: string) => void;
+    },
+  ) => {
+    setLoading(true);
+    fetch(
+      `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}/todos/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({text: values.text}),
+      },
+    )
+      .then(response => response.json())
+      .then(
+        todo => {
+          setText(todo.text);
+          setEditing(false);
+          setLoading(false);
+        },
+        editTodoTextError => {
+          setFieldError('text', editTodoTextError);
+          setLoading(false);
+        },
+      );
+  };
   const textComponent = (
     <TouchableOpacity style={styles.textWrap} onLongPress={toggleEditing}>
       <Text style={[styles.text, complete && styles.complete]}>{text}</Text>
@@ -94,17 +134,29 @@ const Todo: React.FC<TodoType> = ({
     </TouchableOpacity>
   );
   const editingComponent = (
-    <View style={styles.textWrap}>
-      <TextInput
-        returnKeyType="done"
-        blurOnSubmit={false}
-        onChangeText={newText => setText(newText)}
-        multiline
-        autoFocus
-        value={text}
-        style={styles.input}
-      />
-    </View>
+    <Formik
+      initialValues={{
+        text,
+      }}
+      validationSchema={EditTodoTextSchema}
+      onSubmit={editTodo}>
+      {({values, handleChange, handleSubmit, touched, errors}) => (
+        <View style={styles.textWrap}>
+          <TextInput
+            returnKeyType="done"
+            blurOnSubmit={false}
+            onSubmitEditing={handleSubmit}
+            onChangeText={handleChange('text')}
+            autoFocus
+            value={values.text}
+            style={styles.input}
+          />
+          {touched.text && errors.text && (
+            <Text style={styles.errorMessage}>{errors.text}</Text>
+          )}
+        </View>
+      )}
+    </Formik>
   );
   return (
     <View style={styles.container}>
@@ -141,15 +193,20 @@ const styles = StyleSheet.create({
   textWrap: {
     flex: 1,
     marginHorizontal: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 36,
   },
   text: {
     fontSize: 16,
     color: '#4d4d4d',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
-    height: 24,
-    fontSize: 20,
+    height: 36,
+    fontSize: 16,
     color: '#4D4D4D',
   },
   loading: {

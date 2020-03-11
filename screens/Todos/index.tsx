@@ -57,12 +57,8 @@ const Todos = () => {
         setTodosTotal(todosResult.length);
       });
   }, [user]);
+
   useEffect(() => {
-    console.log('useEffect!', {
-      lastPage,
-      page,
-    });
-    console.log('lastPage~', todos.length);
     const perPage = 10;
     if (
       loading ||
@@ -117,9 +113,11 @@ const Todos = () => {
   const handleLoadMore = () => {
     setPage(page + 1);
   };
+
   const currentTodos = renderTodos();
   const count = currentTodos.length;
   const showClear = currentTodos.some(({complete}) => complete);
+
   return (
     <TodosContext.Provider
       value={{
