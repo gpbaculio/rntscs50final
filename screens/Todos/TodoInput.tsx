@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, TextInput} from 'react-native';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {TodosContext} from './';
+import {TodosContext, Loader} from './';
 import {AuthContext} from '../../components/Root';
 
 const TodoInputSchema = Yup.object().shape({
@@ -13,10 +13,57 @@ const TodoInputSchema = Yup.object().shape({
 const TodoInput = () => {
   const {todos, setTodos} = useContext(TodosContext);
   const {user} = useContext(AuthContext);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [toggleCompleteAllLoading, setToggleCompleteAllLoading] = useState(
+    false,
+  );
+
+  const toggleCompleteAll = async () => {
+    const completeAll = todos.every(todo => todo.complete);
+    setToggleCompleteAllLoading(true);
+    const todoIds: string[] = todos
+      .filter(todo => todo.complete === completeAll)
+      .map(todo => todo.id);
+    try {
+      for (const todoId of todoIds) {
+        await fetch(
+          `https://5e65ab532aea440016afb25f.mockapi.io/users/${
+            user!.id
+          }/todos/${todoId}`,
+          {
+            method: 'PUT',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({complete: !completeAll}),
+          },
+        );
+      }
+      setTodos([
+        ...todos.map(todo => {
+          if (todoIds.indexOf(todo.id) !== -1) {
+            return {
+              ...todo,
+              complete: !completeAll,
+            };
+          } else {
+            return todo;
+          }
+        }),
+      ]);
+      setToggleCompleteAllLoading(false);
+    } catch (toggleCompleteAllError) {
+      setError(toggleCompleteAllError);
+      setToggleCompleteAllLoading(false);
+    }
+  };
   return (
     <View style={styles.inputContainer}>
-      <TouchableOpacity>
+      {!!toggleCompleteAllLoading && <Loader />}
+      {!!error && <Text style={styles.errorMessage}>{error}</Text>}
+      <TouchableOpacity onPress={toggleCompleteAll}>
         <Text
           style={[
             styles.completeAll,

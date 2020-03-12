@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {
   Text,
   TextInput,
@@ -34,13 +34,14 @@ const Todo: React.FC<TodoType> = ({
   userId,
 }) => {
   const {setTodos, todos, currentFilter} = useContext(TodosContext);
-
   const [complete, setComplete] = useState(initComplete);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState(initText);
   const [error, setError] = useState('');
-
+  useEffect(() => {
+    setComplete(initComplete);
+  }, [initComplete]);
   const toggleEditing = () => {
     setEditing(!editing);
     setLoading(false);

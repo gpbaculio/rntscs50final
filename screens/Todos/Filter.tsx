@@ -18,13 +18,12 @@ const Filter: React.FC<FilterPropsType> = ({showClear}) => {
     setLoading(true);
     const completedTodos = todos.filter(({complete}) => complete);
     const activeTodos = todos.filter(({complete}) => !complete);
-    console.log('loading before try ', loading);
     try {
-      for (const {id} of completedTodos) {
+      for (const completedTodo of completedTodos) {
         await fetch(
           `https://5e65ab532aea440016afb25f.mockapi.io/users/${
             user!.id
-          }/todos/${id}`,
+          }/todos/${completedTodo.id}`,
           {
             method: 'DELETE',
             headers: {
