@@ -7,8 +7,9 @@ import {
   Switch,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import {Formik, FormikState} from 'formik';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -32,12 +33,14 @@ const Todo: React.FC<TodoType> = ({
   text: initText,
   userId,
 }) => {
+  const {setTodos, todos, currentFilter} = useContext(TodosContext);
+
   const [complete, setComplete] = useState(initComplete);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState(initText);
-  const {setTodos, todos, currentFilter} = useContext(TodosContext);
   const [error, setError] = useState('');
+
   const toggleEditing = () => {
     setEditing(!editing);
     setLoading(false);
@@ -83,67 +86,100 @@ const Todo: React.FC<TodoType> = ({
         },
       );
   };
-  const editTodo = (
-    values: {
-      text: string;
-    },
-    {
-      setFieldError,
-    }: {
-      setFieldError: (field: string, message: string) => void;
-    },
-  ) => {
-    setLoading(true);
-    fetch(
-      `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}/todos/${id}`,
-      {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+
+  const deleteTodo = () => {
+    Alert.alert(
+      `Delete ${text}?`,
+      'Please Confirm to Proceed',
+      [
+        {
+          text: 'Confirm',
+          onPress: () => {
+            setLoading(true);
+            fetch(
+              `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}/todos/${id}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                },
+              },
+            )
+              .then(response => response.json())
+              .then(
+                deletedTodo => {
+                  if (deletedTodo) {
+                    setTodos(todos.filter(todo => todo.id !== deletedTodo.id));
+                  }
+                },
+                deleteTodoError => {
+                  setError(deleteTodoError);
+                  setLoading(false);
+                },
+              );
+          },
         },
-        body: JSON.stringify({text: values.text}),
-      },
-    )
-      .then(response => response.json())
-      .then(
-        todo => {
-          setText(todo.text);
-          setEditing(false);
-          setLoading(false);
+        {
+          text: 'Cancel',
+          style: 'cancel',
         },
-        editTodoTextError => {
-          setFieldError('text', editTodoTextError);
-          setLoading(false);
-        },
-      );
+      ],
+      {cancelable: false},
+    );
   };
+
   const textComponent = (
     <TouchableOpacity style={styles.textWrap} onLongPress={toggleEditing}>
       <Text style={[styles.text, complete && styles.complete]}>{text}</Text>
     </TouchableOpacity>
   );
+
   const removeButton = (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={deleteTodo}>
       <MaterialIcons name={'delete'} size={24} color={'#cc9a9a'} />
     </TouchableOpacity>
   );
-  const doneButton = (
-    <TouchableOpacity>
-      <MaterialIcons name={'save'} size={24} color={'green'} />
-    </TouchableOpacity>
-  );
+
   const editingComponent = (
     <Formik
       initialValues={{
         text,
       }}
       validationSchema={EditTodoTextSchema}
-      onSubmit={editTodo}>
+      onSubmit={(values, {setFieldError}) => {
+        setLoading(true);
+        fetch(
+          `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}/todos/${id}`,
+          {
+            method: 'PUT',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({text: values.text}),
+          },
+        )
+          .then(response => response.json())
+          .then(
+            todo => {
+              setText(todo.text);
+              setEditing(false);
+              setLoading(false);
+            },
+            editTodoTextError => {
+              setFieldError('text', editTodoTextError);
+              setLoading(false);
+            },
+          );
+      }}>
       {({values, handleChange, handleSubmit, touched, errors}) => (
         <View style={styles.textWrap}>
           <TextInput
             returnKeyType="done"
+            onBlur={() => {
+              setEditing(false);
+            }}
             blurOnSubmit={false}
             onSubmitEditing={handleSubmit}
             onChangeText={handleChange('text')}
@@ -158,6 +194,7 @@ const Todo: React.FC<TodoType> = ({
       )}
     </Formik>
   );
+
   return (
     <View style={styles.container}>
       <Switch
@@ -166,7 +203,7 @@ const Todo: React.FC<TodoType> = ({
         value={complete}
       />
       {editing ? editingComponent : textComponent}
-      {editing ? doneButton : removeButton}
+      {!editing && removeButton}
       {loading && (
         <View style={styles.loading}>
           <ActivityIndicator animating size="small" />
@@ -185,6 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     justifyContent: 'space-between',
     flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   complete: {
@@ -206,7 +244,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 36,
-    fontSize: 16,
+    fontSize: 14,
     color: '#4D4D4D',
   },
   loading: {
