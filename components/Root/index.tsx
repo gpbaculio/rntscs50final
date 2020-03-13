@@ -5,13 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import {BottomTabs, Signin as SigninComponent} from '../../screens';
 import {authReducer, authInitState} from './reducer';
-import {
-  restoreToken,
-  signInRequest,
-  signInSuccess,
-  signInFailure,
-  signOut,
-} from './actions';
+import {signInRequest, signInSuccess, signInFailure, signOut} from './actions';
 import {UserType} from './types';
 
 type AuthContextProps = {
@@ -64,10 +58,14 @@ export default function App() {
           await AsyncStorage.setItem('user_email', email);
           dispatch(signInSuccess(email, token));
         } catch (e) {
+          await AsyncStorage.clear();
           dispatch(signInFailure(e));
         }
       },
-      signOut: () => dispatch(signOut()),
+      signOut: async () => {
+        await AsyncStorage.clear();
+        dispatch(signOut());
+      },
       loading: state.loading,
       user: state.user,
     }),
