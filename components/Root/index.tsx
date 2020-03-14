@@ -12,7 +12,7 @@ type AuthContextProps = {
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => void;
   loading: boolean;
-  user: UserType;
+  user: UserType | null;
 };
 
 export type AppStackParamListType = {
@@ -70,11 +70,11 @@ export default function App() {
         }
       },
       signOut: async () => {
-        await AsyncStorage.clear();
         dispatch(signOut());
+        await AsyncStorage.clear();
       },
       loading: state.loading,
-      user: state.user,
+      user: state.user || null,
     }),
     [state.loading, state.user],
   );

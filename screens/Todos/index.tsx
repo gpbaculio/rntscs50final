@@ -51,11 +51,15 @@ const Todos = () => {
   const [lastPage, setlastPage] = useState(0);
 
   useEffect(() => {
-    fetch(`https://5e65ab532aea440016afb25f.mockapi.io/users/${user!.id}/todos`)
-      .then(response => response.json())
-      .then(todosResult => {
-        setTodosTotal(todosResult.length);
-      });
+    if (user) {
+      fetch(
+        `https://5e65ab532aea440016afb25f.mockapi.io/users/${user.id}/todos`,
+      )
+        .then(response => response.json())
+        .then(todosResult => {
+          setTodosTotal(todosResult.length);
+        });
+    }
   }, [user]);
 
   useEffect(() => {

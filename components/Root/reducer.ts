@@ -10,14 +10,7 @@ import {
 export const authInitState = {
   loading: false,
   token: null,
-  user: {
-    email: '',
-    id: 0,
-    avatar: '',
-    phone: '',
-    name: '',
-    address: '',
-  },
+  user: null,
   error: '',
 };
 

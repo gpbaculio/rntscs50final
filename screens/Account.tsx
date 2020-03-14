@@ -5,52 +5,55 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const Account = () => {
   const {user, signOut} = useContext(AuthContext);
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.upperInfoContainer}>
-        <Image style={styles.avatar} source={{uri: user!.avatar}} />
-        <Text style={styles.userName}>{user!.name}</Text>
+  if (user) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.upperInfoContainer}>
+          <Image style={styles.avatar} source={{uri: user.avatar}} />
+          <Text style={styles.userName}>{user.name}</Text>
+        </View>
+        <View style={styles.profileContainer}>
+          <View style={styles.infoContainer}>
+            <MaterialIcons
+              style={styles.infoIcon}
+              name={'email'}
+              size={30}
+              color={'#2F77BF'}
+            />
+            <Text>{user!.email}</Text>
+          </View>
+          <View style={styles.infoContainer}>
+            <MaterialIcons
+              style={styles.infoIcon}
+              name={'local-phone'}
+              size={30}
+              color={'#2F77BF'}
+            />
+            <Text>{user.phone}</Text>
+          </View>
+          <View style={styles.infoContainer}>
+            <MaterialIcons
+              style={styles.infoIcon}
+              name={'location-on'}
+              size={30}
+              color={'#2F77BF'}
+            />
+            <Text>{user.address}</Text>
+          </View>
+          <Button
+            onPress={() => {
+              if (signOut) {
+                signOut();
+              }
+            }}
+            title="Logout"
+          />
+        </View>
       </View>
-      <View style={styles.profileContainer}>
-        <View style={styles.infoContainer}>
-          <MaterialIcons
-            style={styles.infoIcon}
-            name={'email'}
-            size={30}
-            color={'#2F77BF'}
-          />
-          <Text>{user!.email}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <MaterialIcons
-            style={styles.infoIcon}
-            name={'local-phone'}
-            size={30}
-            color={'#2F77BF'}
-          />
-          <Text>{user!.phone}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <MaterialIcons
-            style={styles.infoIcon}
-            name={'location-on'}
-            size={30}
-            color={'#2F77BF'}
-          />
-          <Text>{user!.address}</Text>
-        </View>
-        <Button
-          onPress={() => {
-            if (signOut) {
-              signOut();
-            }
-          }}
-          title="Logout"
-        />
-      </View>
-    </View>
-  );
+    );
+  } else {
+    return null;
+  }
 };
 
 export default Account;

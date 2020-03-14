@@ -17,7 +17,7 @@ export type UserType = {
 
 export interface AppStateType {
   loading: boolean;
-  user: UserType;
+  user: UserType | null;
   token: string | null;
   error: string;
 }
