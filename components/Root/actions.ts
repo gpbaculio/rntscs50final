@@ -11,6 +11,7 @@ import {
   SignInFailureType,
   RestoreTokenType,
   SignoutType,
+  UserType,
 } from './types';
 
 export const signInRequest: () => SignInRequestType = () => ({
@@ -18,12 +19,12 @@ export const signInRequest: () => SignInRequestType = () => ({
 });
 
 export const signInSuccess: (
-  email: string,
+  user: UserType,
   token: string,
-) => SignInSuccessType = (email, token) => ({
+) => SignInSuccessType = (user, token) => ({
   type: SIGN_IN_SUCCESS,
   payload: {
-    email,
+    user,
     token,
   },
 });

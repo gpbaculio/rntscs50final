@@ -13,6 +13,10 @@ export const authInitState = {
   user: {
     email: '',
     id: 0,
+    avatar: '',
+    phone: '',
+    name: '',
+    address: '',
   },
   error: '',
 };
@@ -27,10 +31,7 @@ export const authReducer = (state: AppStateType, action: AppActionTypes) => {
     case SIGN_IN_SUCCESS:
       return {
         ...state,
-        user: {
-          email: action.payload.email,
-          id: 1, // mock id
-        },
+        user: action.payload.user,
         token: action.payload.token,
         error: '',
       };

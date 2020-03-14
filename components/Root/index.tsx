@@ -31,9 +31,11 @@ export default function App() {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       const token = await AsyncStorage.getItem('token');
-      const userEmail = await AsyncStorage.getItem('user_email');
-      if (token && userEmail) {
-        dispatch(signInSuccess(userEmail, token));
+      const user = await AsyncStorage.getItem('user').then(savedUser =>
+        savedUser ? JSON.parse(savedUser) : null,
+      );
+      if (token && user) {
+        dispatch(signInSuccess(user, token));
       }
     };
 
@@ -45,6 +47,7 @@ export default function App() {
       signIn: async (email: string, password: string) => {
         dispatch(signInRequest());
         try {
+          const userId = 1; // mock
           const {token} = await fetch('https://reqres.in/api/login', {
             method: 'POST',
             headers: {
@@ -53,10 +56,14 @@ export default function App() {
             },
             body: JSON.stringify({email, password}),
           }).then(res => res.json());
-
+          const {avatar, phone, name, address} = await fetch(
+            `https://5e65ab532aea440016afb25f.mockapi.io/users/${userId}`,
+          ).then(res => res.json());
+          //just saving cause we cannot fetch user by token
           await AsyncStorage.setItem('token', token);
-          await AsyncStorage.setItem('user_email', email);
-          dispatch(signInSuccess(email, token));
+          const user = {email, avatar, id: userId, phone, name, address};
+          await AsyncStorage.setItem('user', JSON.stringify(user));
+          dispatch(signInSuccess(user, token));
         } catch (e) {
           await AsyncStorage.clear();
           dispatch(signInFailure(e));

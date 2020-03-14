@@ -7,8 +7,12 @@ import {
 } from './constants';
 
 export type UserType = {
-  email: string;
   id: number;
+  email: string;
+  avatar: string;
+  phone: string;
+  name: string;
+  address: string;
 };
 
 export interface AppStateType {
@@ -25,7 +29,7 @@ export type SignInRequestType = {
 export type SignInSuccessType = {
   type: typeof SIGN_IN_SUCCESS;
   payload: {
-    email: string;
+    user: UserType;
     token: string;
   };
 };
