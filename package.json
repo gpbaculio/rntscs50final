@@ -18,7 +18,7 @@
     "@types/normalizr": "^2.0.18",
     "@types/react-native-vector-icons": "^6.4.5",
     "@types/yup": "^0.26.32",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "formik": "^2.1.4",
     "normalizr": "^3.6.0",
     "react": "16.9.0",
